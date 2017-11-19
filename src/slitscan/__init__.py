@@ -13,7 +13,7 @@ class BreakException(Exception):
 	"""Utility exception used to break out of loops"""
 	pass
 
-def slitscan(imsequence, height=400, frame_aggr=5):
+def slitscan(imsequence, height=400, frame_aggr=5, length=0):
 	"""Generates a color strip of a given image sequence and returns the result as image object.
 
 	Using OpenCV, this function creates a color slit scan from the given input
@@ -43,13 +43,18 @@ def slitscan(imsequence, height=400, frame_aggr=5):
 		raise ValueError('Invalid output image height of {:d}'.format(height))
 
 	bgr = []
+	prog= 0
 
-	print('Reading frames')
+	print ('Reading ', length, ' frames')
 
 	try:
 		while imsequence.isOpened():
 			bgrLocal = np.array([0, 0, 0], dtype=np.float)
 			c = 0
+			prog = prog + 1
+			perc = prog / length * 100
+
+			print('reading frame {:} / {:} [{:0.2f}%]'.format(prog, length, perc))
 
 			for i in range(0, frame_aggr):
 				try:
@@ -104,7 +109,9 @@ def slitscanf(infile, height=400, frame_aggr=5, outfile=None):
 
 	cap = cv2.VideoCapture(infile)
 
-	im = slitscan(cap, height, frame_aggr)
+	length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+	im = slitscan(cap, height, frame_aggr, length)
 
 	cv2.imwrite(outfile, im)
 
